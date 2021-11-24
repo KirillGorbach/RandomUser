@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/explore_users"
+        android:enabled="true"
+        android:icon="?android:attr/actionModeWebSearchDrawable"
+        android:title="@string/explore_users"/>
+
+    <item
+        android:id="@+id/contacts"
+        android:enabled="true"
+        android:icon="@android:drawable/ic_menu_save"
+        android:title="@string/contacts"/>
+
+</menu>
