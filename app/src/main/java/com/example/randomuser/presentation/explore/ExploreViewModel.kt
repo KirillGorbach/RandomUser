@@ -63,11 +63,10 @@ class ExploreViewModel @Inject constructor(
 
     fun removeSavedUser(userEntity: UserEntity) {
         removeSavedUserUseCase(userEntity)
-            .observeOn(Schedulers.io())
-            .subscribeOn(AndroidSchedulers.mainThread())
-            .subscribe({},{
-                it.printStackTrace()
-                //_errorTextIdLiveData.value = errorHandler.getErrorStringIdByThrowable(it)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe ({},{
+                _errorTextIdLiveData.value = errorHandler.getErrorStringIdByThrowable(it)
             })
     }
 
