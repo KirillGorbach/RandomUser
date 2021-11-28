@@ -8,6 +8,7 @@ import com.example.randomuser.presentation.main.entity.UserEntity
 import com.example.randomuser.domain.usecase.InsertSavedUserUseCase
 import com.example.randomuser.domain.usecase.RemoveSavedUserUseCase
 import com.example.randomuser.domain.usecase.SavedUsersUseCase
+import com.example.randomuser.presentation.SingleLiveEvent
 import com.example.randomuser.presentation.util.ErrorHandler
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -22,7 +23,9 @@ class ContactsViewModel @Inject constructor(
 
     val userData: LiveData<List<UserEntity>>
         get() =_userData
-
+    val errorTextIdLiveData: LiveData<Int>
+        get() = _errorTextIdLiveData
+    private val _errorTextIdLiveData = SingleLiveEvent<Int>()
     private val _userData = MutableLiveData<List<UserEntity>>()
     private val compositeDisposable = CompositeDisposable()
 
@@ -30,7 +33,7 @@ class ContactsViewModel @Inject constructor(
         getSavedUsers()
     }
 
-    fun getSavedUsers() {
+    private fun getSavedUsers() {
         compositeDisposable.add(savedUsersUseCase()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -39,17 +42,21 @@ class ContactsViewModel @Inject constructor(
                     _userData.value = users
                 },
                 {
-                    errorHandler.createErrorToast(it)
+                    _errorTextIdLiveData.value = errorHandler.getErrorStringIdByThrowable(it)
                 }
             )
         )
     }
 
     fun removeSavedUser(userEntity: UserEntity) {
-        Thread {
-            removeSavedUserUseCase(userEntity)
-        }.start()
-        _userData.value = _userData.value?.filter { it != userEntity }
+        removeSavedUserUseCase(userEntity)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe ({
+                _userData.value = _userData.value?.filter { it != userEntity }
+            },{
+                _errorTextIdLiveData.value = errorHandler.getErrorStringIdByThrowable(it)
+            })
     }
 
     override fun onCleared() {

@@ -5,27 +5,26 @@ import android.widget.Toast
 import androidx.annotation.StringRes
 import com.example.randomuser.R
 import retrofit2.HttpException
+import java.net.ConnectException
 import javax.inject.Inject
 
-class ErrorHandler @Inject constructor(
-    private val context: Context
-) {
+class ErrorHandler @Inject constructor() {
 
-    fun createErrorToast(
-        throwable: Throwable,
-    ) {
-        throwable.printStackTrace()
-        when (throwable) {
+    fun getErrorStringIdByThrowable(throwable: Throwable): Int{
+        return when (throwable) {
             is HttpException -> {
-                showToast(R.string.server_error)
+                if (throwable.code() == 404){
+                    R.string.api_exception
+                }
+                else {
+                    R.string.server_error
+                }
             }
-            else -> {
-                showToast(R.string.connection_error)
+            is ConnectException -> {
+                R.string.connection_error
             }
+            else ->
+                R.string.unknown_exception
         }
-    }
-
-    private fun showToast(@StringRes textId: Int) {
-        Toast.makeText(context, textId, Toast.LENGTH_SHORT).show()
     }
 }

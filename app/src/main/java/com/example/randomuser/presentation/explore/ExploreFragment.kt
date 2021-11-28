@@ -3,6 +3,7 @@ package com.example.randomuser.presentation.explore
 import android.content.Context
 import android.os.Bundle
 import android.os.Parcelable
+import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -13,6 +14,7 @@ import com.example.randomuser.databinding.FragmentExploreBinding
 import com.example.randomuser.presentation.main.adapter.UsersAdapter
 import com.example.randomuser.presentation.main.appComponent
 import com.example.randomuser.presentation.main.entity.UserEntity
+import com.example.randomuser.presentation.util.extentions.showToastWithErrorMessage
 import com.example.randomuser.presentation.util.factory.ViewModelFactory
 import kotlinx.serialization.ExperimentalSerializationApi
 import javax.inject.Inject
@@ -51,6 +53,10 @@ class ExploreFragment : Fragment(R.layout.fragment_explore) {
 
             viewModel.userData.observe(viewLifecycleOwner) { users ->
                 usersAdapter.setData(users)
+            }
+
+            viewModel.errorTextIdLiveData.observe(viewLifecycleOwner) {
+                requireContext().showToastWithErrorMessage(it)
             }
 
         }

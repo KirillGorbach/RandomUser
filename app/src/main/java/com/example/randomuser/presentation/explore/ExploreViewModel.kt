@@ -8,8 +8,10 @@ import com.example.randomuser.presentation.main.entity.UserEntity
 import com.example.randomuser.domain.usecase.AllUsersUseCase
 import com.example.randomuser.domain.usecase.InsertSavedUserUseCase
 import com.example.randomuser.domain.usecase.RemoveSavedUserUseCase
+import com.example.randomuser.presentation.SingleLiveEvent
 import com.example.randomuser.presentation.util.ErrorHandler
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -25,7 +27,9 @@ class ExploreViewModel @Inject constructor(
 
     val userData: LiveData<List<UserEntity>>
         get() =_userData
-
+    val errorTextIdLiveData: LiveData<Int>
+        get() = _errorTextIdLiveData
+    private val _errorTextIdLiveData = SingleLiveEvent<Int>()
     private val _userData = MutableLiveData<List<UserEntity>>()
     private val compositeDisposable = CompositeDisposable()
 
@@ -42,22 +46,29 @@ class ExploreViewModel @Inject constructor(
                     _userData.value = users
                 },
                 {
-                    errorHandler.createErrorToast(it)
+                    _errorTextIdLiveData.value = errorHandler.getErrorStringIdByThrowable(it)
                 }
             )
         )
     }
 
     fun insertSavedUser(userEntity: UserEntity) {
-        Thread {
-            insertSavedUserUseCase(userEntity)
-        }.start()
+        insertSavedUserUseCase(userEntity)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({},{
+                _errorTextIdLiveData.value = errorHandler.getErrorStringIdByThrowable(it)
+            })
     }
 
     fun removeSavedUser(userEntity: UserEntity) {
-        Thread {
-            removeSavedUserUseCase(userEntity)
-        }.start()
+        removeSavedUserUseCase(userEntity)
+            .observeOn(Schedulers.io())
+            .subscribeOn(AndroidSchedulers.mainThread())
+            .subscribe({},{
+                it.printStackTrace()
+                //_errorTextIdLiveData.value = errorHandler.getErrorStringIdByThrowable(it)
+            })
     }
 
     override fun onCleared() {

@@ -12,6 +12,7 @@ import com.example.randomuser.databinding.FragmentContactsBinding
 import com.example.randomuser.presentation.main.entity.UserEntity
 import com.example.randomuser.presentation.main.adapter.UsersAdapter
 import com.example.randomuser.presentation.main.appComponent
+import com.example.randomuser.presentation.util.extentions.showToastWithErrorMessage
 import com.example.randomuser.presentation.util.factory.ViewModelFactory
 import kotlinx.serialization.ExperimentalSerializationApi
 import javax.inject.Inject
@@ -53,6 +54,9 @@ class ContactsFragment : Fragment(R.layout.fragment_contacts) {
                 savedUsersAdapter.setData(users)
             }
 
+            viewModel.errorTextIdLiveData.observe(viewLifecycleOwner) {
+                requireContext().showToastWithErrorMessage(it)
+            }
         }
     }
 
